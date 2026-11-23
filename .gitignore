@@ -1,0 +1,8 @@
+tmp/
+__pycache__/
+*.pyc
+.venv/
+out/
+*.psd
+*.tif
+*.log
