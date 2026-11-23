@@ -37,11 +37,24 @@ _OUT_LOCK = threading.Lock()
 
 
 def send(msg):
-    """Write one JSON-RPC message to the client (thread-safe)."""
-    line = json.dumps(msg, ensure_ascii=False) + "\n"
+    """Write one JSON-RPC message to the client (thread-safe, always UTF-8).
+
+    ZBrush returns localized strings (Chinese on a zh-CN install). Encoding them
+    with the console code page would put GBK bytes on the wire, which any MCP
+    client decoding UTF-8 rejects. Encode explicitly and escape as a fallback.
+    """
+    try:
+        data = (json.dumps(msg, ensure_ascii=False) + "\n").encode("utf-8")
+    except (UnicodeEncodeError, ValueError):
+        data = (json.dumps(msg, ensure_ascii=True) + "\n").encode("utf-8")
     with _OUT_LOCK:
-        sys.stdout.write(line)
-        sys.stdout.flush()
+        buf = getattr(sys.stdout, "buffer", None)
+        if buf is not None:
+            buf.write(data)
+            buf.flush()
+        else:
+            sys.stdout.write(data.decode("utf-8"))
+            sys.stdout.flush()
 
 
 def send_progress(token, progress, message=None):
@@ -548,8 +561,12 @@ def handle(msg):
 
 
 def main():
+    for stream in (sys.stdin, sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:  # noqa: BLE001 - older/custom streams may lack reconfigure
+            pass
     log("ready (bridge %s:%d, %d tools)" % (BRIDGE_HOST, BRIDGE_PORT, len(TOOLS)))
-    out = sys.stdout
     buf = ""
     while True:
         chunk = sys.stdin.readline()

@@ -3,12 +3,22 @@
 一个**标准 MCP（stdio）**服务器，直连 ZBrush 内置的 JSON-RPC 桥（TCP 127.0.0.1:9876），
 不依赖 dcc-mcp 的 sidecar / registry / gateway / job 库。
 
-    DSH (MCP client)  --stdio, one JSON-RPC per line-->  zbrush_mcp_server.py
+    DSH (MCP client)  --stdio, one JSON-RPC per line-->  server.py
                       --TCP 127.0.0.1:9876-->  ZBrush 插件 --Python SDK-->  ZBrush
 
 - 无持久状态：日志走 stderr，状态只在内存，产物路径由调用方给绝对路径。
 - 不写任何用户目录，因此不受 workspace 写限制。
 - 纯标准库，单文件（server.py），Python 3.9+。
+
+## 仓库结构
+
+    server.py                 MCP 服务器本体（唯一需要运行的代码）
+    e2e_smoke.py              端到端验收脚本（会改动当前 ZBrush 文档）
+    tests/test_m*.py          各里程碑的分步测试（握手、只读、破坏性、转台、烘焙）
+    fixtures/cube.obj         测试用立方体
+    third_party/              ZBrush 侧插件桥（来自 dcc-mcp-zbrush，MIT），仅作参考与离线安装
+    docs/                     设计稿与旧方案记录
+    tmp/                      运行产物（已 gitignore）
 
 ## 启动
 
@@ -26,7 +36,7 @@
 
     mcp_connector_import_json({ "mcpServers": { "zb": {
       "command": "C:\\Users\\Admin\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
-      "args": ["C:\\Users\\Admin\\Documents\\deepseek-harness\\default-workspace\\zbrush-mcp\\server.py"],
+      "args": ["C:\\Users\\Admin\\Documents\\zbrush-mcp\\server.py"],
       "env": { "ZBRUSH_BRIDGE_PORT": "9876" } } } })
 
 注册后可见 15 个 zb* 工具。
