@@ -17,6 +17,8 @@ import threading
 import time
 import traceback
 
+import ops
+
 SERVER_NAME = "zbrush"
 SERVER_VERSION = "0.1.0"
 BRIDGE_HOST = os.environ.get("ZBRUSH_BRIDGE_HOST", "127.0.0.1")
@@ -367,6 +369,55 @@ TOOLS = [
     },
 ]
 
+# --------------------------------------------------------------------------- #
+# high-level ops: all ride execute_python, palette paths resolved at call time
+# --------------------------------------------------------------------------- #
+
+OP_DESCRIPTIONS = {
+    "zbrush_palette": "Press, set, get or test one raw ZBrush palette path "
+                      "(for example 'Tool:Geometry:ZRemesher'). Escape hatch for anything "
+                      "the named tools do not cover. Paths are state dependent: exists=false "
+                      "usually means no mesh in edit mode, not a wrong path.",
+    "zbrush_dynamesh": "Re-topologise the active subtool with DynaMesh, optionally at a given "
+                       "resolution. Destroys subdivision levels and UVs. Use for blocking forms.",
+    "zbrush_zremesher": "Retopologise the active subtool with ZRemesher: optional target polygon "
+                        "count, keep polygroups, freeze border. Returns counts before and after.",
+    "zbrush_polygroups": "Polygroup the active subtool: auto (loose parts), by normals, or split "
+                         "polygroups into separate subtools. Split adds subtools.",
+    "zbrush_mask": "Mask operations on the active subtool: mask all, clear, invert or blur, with "
+                   "optional mask intensity.",
+    "zbrush_morph": "Store, restore or delete the active subtool's morph target, which is the "
+                    "semi-permanent undo for sculpting.",
+    "zbrush_layers": "Create a new sculpt layer or bake all layers down. Baking is destructive.",
+    "zbrush_uv_unwrap": "Unwrap UVs on the active subtool with UV Master's default unwrap.",
+    "zbrush_project_all": "Project All: push detail from the other subtools onto the active one "
+                          "(reprojects without changing topology).",
+    "zbrush_polypaint_fill": "Fill the active subtool with one polypaint colour, given as 0-255 RGB.",
+    "zbrush_render_bpr": "Render the document with BPR, optionally with AO and an explicit document "
+                         "size, and optionally save the image to a path.",
+    "zbrush_brush": "Select a sculpt brush and set draw size, Z intensity, focal shift and stroke "
+                    "type. Changes settings only; it does not paint.",
+    "zbrush_stats": "Read the active subtool's geometry: point and face counts, surface area, "
+                     "volume, solidity, bounds, plus subtool count and active index. Does not "
+                     "modify the scene.",
+    "zbrush_batch_export": "Export every subtool to <directory>/<prefix>_NN.<ext>. Existing files "
+                           "are skipped unless overwrite is true.",
+}
+
+for _op_name in sorted(ops.OPS):
+    _op_def = ops.OPS[_op_name]
+    TOOLS.append({
+        "name": _op_name,
+        "description": OP_DESCRIPTIONS[_op_name],
+        "bridge_method": "execute_python",
+        "op": _op_name,
+        "timeout": _op_def["timeout"],
+        "annotations": _op_def["annotations"],
+        "inputSchema": _schema(_op_def["params"]),
+    })
+del _op_name, _op_def
+
+
 TOOLS_BY_NAME = {t["name"]: t for t in TOOLS}
 
 
@@ -449,6 +500,11 @@ def _explain(exc):
         return exc.message if exc.message.startswith("Invalid") else "Invalid arguments: %s" % exc.message
     if code == -32000:
         tb = data.get("traceback") or data.get("trace") or ""
+        hint = data.get("hint")
+        if hint and "Operation refused" in (exc.message or ""):
+            probed = data.get("probed")
+            extra = ("\nProbed: %s" % ", ".join(probed)) if probed else ""
+            return "%s\n%s%s" % (exc.message, hint, extra)
         if "query_mesh3d" in (exc.message or "") and not tb:
             return ("The document has no mesh to inspect (active tool is still the empty "
                     "SimpleBrush document).\nImport or create a subtool first "
@@ -460,6 +516,45 @@ def _explain(exc):
     return "Bridge error %s: %s" % (code, exc.message)
 
 
+def _op_payload(detail):
+    """Pull the structured JSON payload out of a failed op's traceback."""
+    for line in reversed((detail or "").strip().splitlines()):
+        line = line.strip()
+        if "RuntimeError:" not in line:
+            continue
+        blob = line.split("RuntimeError:", 1)[1].strip()
+        try:
+            payload = json.loads(blob)
+        except ValueError:
+            return None
+        return payload if isinstance(payload, dict) else None
+    return None
+
+
+def _run_op(tool, params):
+    """Run one high-level op as an execute_python script and return its JSON result."""
+    code = ops.PRELUDE + ops.OPS[tool["op"]]["body"]
+    reply = bridge_call("execute_python",
+                        {"code": code, "context": {"params": params}},
+                        timeout=tool["timeout"])
+    if not reply.get("success"):
+        detail = reply.get("error") or "script failed"
+        payload = _op_payload(detail)
+        if payload:
+            raise BridgeError(-32000, "Operation refused: %s" % payload.get("error", "failed"),
+                              dict(payload, traceback=""))
+        tail = [ln for ln in detail.strip().splitlines() if ln.strip()]
+        raise BridgeError(-32000, "ZBrush script failed: %s" % (tail[-1] if tail else "unknown"),
+                          {"traceback": detail})
+    raw = (reply.get("context") or {}).get("result")
+    if raw is None:
+        return {}
+    try:
+        return json.loads(raw)
+    except ValueError:
+        return {"raw": raw}
+
+
 def call_tool(name, args):
     tool = TOOLS_BY_NAME.get(name)
     if tool is None:
@@ -467,6 +562,9 @@ def call_tool(name, args):
 
     params = _validate(tool, args)
     method = tool["bridge_method"]
+
+    if tool.get("op"):
+        return _run_op(tool, params)
 
     if name == "zbrush_session":
         started = time.time()
