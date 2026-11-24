@@ -130,8 +130,8 @@ DSH 侧注册一个 stdio MCP server：
 {
   "mcpServers": {
     "zbrush": {
-      "command": "C:\\Users\\Admin\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
-      "args": ["C:\\Users\\Admin\\Documents\\deepseek-harness\\default-workspace\\zbrush-mcp\\server.py"],
+      "command": "zbrush-mcp",
+      "args": ["serve"],
       "env": { "ZBRUSH_BRIDGE_PORT": "9876" }
     }
   }

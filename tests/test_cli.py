@@ -16,7 +16,7 @@ def test_cli_syntax_is_compatible_with_python_39():
 def test_repository_has_no_personal_python_path():
     root = Path(__file__).resolve().parents[1]
     checked_files = [
-        root / "README.md",
+        *sorted(root.rglob("*.md")),
         root / "e2e_smoke.py",
         *sorted((root / "tests").glob("test_m*.py")),
     ]
