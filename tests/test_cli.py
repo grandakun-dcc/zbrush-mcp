@@ -1,5 +1,6 @@
 import ast
 import json
+import re
 import socket
 from pathlib import Path
 
@@ -14,10 +15,15 @@ def test_cli_syntax_is_compatible_with_python_39():
 
 def test_repository_has_no_personal_python_path():
     root = Path(__file__).resolve().parents[1]
-    python_files = [root / "e2e_smoke.py", *sorted((root / "tests").glob("test_m*.py"))]
+    checked_files = [
+        root / "README.md",
+        root / "e2e_smoke.py",
+        *sorted((root / "tests").glob("test_m*.py")),
+    ]
 
-    for path in python_files:
-        assert "C:\\Users\\Admin" not in path.read_text(encoding="utf-8"), path
+    for path in checked_files:
+        content = path.read_text(encoding="utf-8")
+        assert re.search(r"C:\\+Users\\+Admin", content) is None, path
 
 
 def test_doctor_reports_unreachable_bridge(capsys):

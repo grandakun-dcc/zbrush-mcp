@@ -53,8 +53,8 @@
 ## 在 DSH 里注册
 
     mcp_connector_import_json({ "mcpServers": { "zb": {
-      "command": "C:\\Users\\Admin\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
-      "args": ["C:\\Users\\Admin\\Documents\\zbrush-mcp\\server.py"],
+      "command": "zbrush-mcp",
+      "args": ["serve"],
       "env": { "ZBRUSH_BRIDGE_PORT": "9876" } } } })
 
 注册后可见 **29** 个 zb* 工具（15 个基础 + 14 个高层 op）。
