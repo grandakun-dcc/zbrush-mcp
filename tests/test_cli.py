@@ -26,6 +26,13 @@ def test_repository_has_no_personal_python_path():
         assert re.search(r"C:\\+Users\\+Admin", content) is None, path
 
 
+def test_install_script_checks_native_command_failures():
+    root = Path(__file__).resolve().parents[1]
+    script = (root / "scripts" / "install.ps1").read_text(encoding="utf-8")
+
+    assert script.count("if ($LASTEXITCODE -ne 0)") >= 3
+
+
 def test_doctor_reports_unreachable_bridge(capsys):
     result = zbrush_mcp_cli.main(
         ["doctor", "--host", "127.0.0.1", "--port", "1", "--timeout", "0.05"]
