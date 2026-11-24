@@ -28,7 +28,19 @@
 
 ## 启动
 
-    "C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe" server.py
+推荐安装为稳定命令入口：
+
+    powershell -ExecutionPolicy Bypass -File scripts/install.ps1
+    zbrush-mcp doctor
+    zbrush-mcp serve
+
+`doctor` 只检查本机桥端口是否可达，不修改 ZBrush 文档。历史
+`tests/test_m*.py` 与 `tests/ops_smoke*.py` 是需要运行中 ZBrush 的真实验收脚本；
+自动化单元测试使用 `python -m pytest -q`。
+
+从源码直接启动仍然可用：
+
+    python server.py
 
 环境变量：
 

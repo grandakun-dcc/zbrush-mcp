@@ -2,7 +2,7 @@
 """M2 destructive half: run the scene-changing tools on the throwaway cube."""
 import json, os, subprocess, sys, time
 
-PY = r"C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe"
+PY = sys.executable
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE) if os.path.basename(HERE) == "tests" else HERE
 SERVER = os.path.join(ROOT, "server.py")
