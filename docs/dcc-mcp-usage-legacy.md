@@ -32,7 +32,7 @@ DSH 连接器 `json-zbrush` = streamable-http `http://127.0.0.1:8788/mcp`，协�
 ## 开机自启（可选，需要你点头我才做）
 
     schtasks /Create /TN "zbrush-mcp-sidecar" /SC ONLOGON /RL LIMITED ^
-      /TR "C:\Users\Admin\Documents\deepseek-harness\default-workspace\zbrush-mcp-test\start-sidecar.cmd"
+      /TR "<工作区>\zbrush-mcp-test\start-sidecar.cmd"
 
 不加也行：每次用之前双击一下那个 .cmd。
 

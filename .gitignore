@@ -3,6 +3,9 @@ __pycache__/
 *.pyc
 .venv/
 out/
+build/
+dist/
+*.egg-info/
 *.psd
 *.tif
 *.log

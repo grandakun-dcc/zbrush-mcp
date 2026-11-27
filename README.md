@@ -28,7 +28,19 @@
 
 ## 启动
 
-    "C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe" server.py
+推荐安装为稳定命令入口：
+
+    powershell -ExecutionPolicy Bypass -File scripts/install.ps1
+    zbrush-mcp doctor
+    zbrush-mcp serve
+
+`doctor` 只检查本机桥端口是否可达，不修改 ZBrush 文档。历史
+`tests/test_m*.py` 与 `tests/ops_smoke*.py` 是需要运行中 ZBrush 的真实验收脚本；
+自动化单元测试使用 `python -m pytest -q`。
+
+从源码直接启动仍然可用：
+
+    python server.py
 
 环境变量：
 
@@ -41,8 +53,8 @@
 ## 在 DSH 里注册
 
     mcp_connector_import_json({ "mcpServers": { "zb": {
-      "command": "C:\\Users\\Admin\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
-      "args": ["C:\\Users\\Admin\\Documents\\zbrush-mcp\\server.py"],
+      "command": "zbrush-mcp",
+      "args": ["serve"],
       "env": { "ZBRUSH_BRIDGE_PORT": "9876" } } } })
 
 注册后可见 **29** 个 zb* 工具（15 个基础 + 14 个高层 op）。

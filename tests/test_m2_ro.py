@@ -2,7 +2,7 @@
 """M2 (read-only half): drive the real ZBrush through the server."""
 import json, subprocess, os, sys
 
-PY = r"C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe"
+PY = sys.executable
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SERVER = os.path.join(ROOT, "server.py")
 proc = subprocess.Popen([PY, SERVER], stdin=subprocess.PIPE, stdout=subprocess.PIPE,

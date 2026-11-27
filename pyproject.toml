@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "grandakun-zbrush-mcp"
+version = "0.1.0"
+description = "Local stdio MCP server for Maxon ZBrush"
+readme = "README.md"
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+dev = ["build>=1.2,<2", "pytest>=8,<10"]
+
+[project.scripts]
+zbrush-mcp = "zbrush_mcp_cli:main"
+
+[tool.setuptools]
+py-modules = ["ops", "server", "zbrush_mcp_cli"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_cli.py"]

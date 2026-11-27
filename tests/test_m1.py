@@ -2,7 +2,7 @@
 """M1 acceptance: drive server.py over stdio the way a real MCP client would."""
 import json, subprocess, sys, os
 
-PY = r"C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe"
+PY = sys.executable
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SERVER = os.path.join(ROOT, "server.py")
 

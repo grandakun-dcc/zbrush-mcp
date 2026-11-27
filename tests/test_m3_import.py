@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import json, subprocess, os, sys
-PY = r"C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe"
+PY = sys.executable
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE) if os.path.basename(HERE) == "tests" else HERE
 SERVER = os.path.join(ROOT, "server.py")

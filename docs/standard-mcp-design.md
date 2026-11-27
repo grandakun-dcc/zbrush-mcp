@@ -50,7 +50,7 @@ ZBrush 2027 内嵌 Python 3.11.9 / zbrush.commands
 
 ## 4. 已核实的桥协议（可直接实现）
 
-文件：`C:\Users\Admin\AppData\Roaming\Maxon\Maxon ZBrush 2027_5B5302DE\Python\dcc_mcp_zbrush_socket_bridge.py`（53,031 B，1,274 行）
+文件：`%APPDATA%\Maxon\<ZBrush用户目录>\Python\dcc_mcp_zbrush_socket_bridge.py`（53,031 B，1,274 行）
 
 - 传输：TCP，默认端口 9876（`DCC_MCP_ZBRUSH_SOCKET_PORT` 覆盖），**一行一条 JSON**，读到 `\n` 为止，回一行。
 - 信封：标准 JSON-RPC 2.0，`{"jsonrpc":"2.0","id":N,"method":"...","params":{...}}`。
@@ -130,8 +130,8 @@ DSH 侧注册一个 stdio MCP server：
 {
   "mcpServers": {
     "zbrush": {
-      "command": "C:\\Users\\Admin\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
-      "args": ["C:\\Users\\Admin\\Documents\\deepseek-harness\\default-workspace\\zbrush-mcp\\server.py"],
+      "command": "zbrush-mcp",
+      "args": ["serve"],
       "env": { "ZBRUSH_BRIDGE_PORT": "9876" }
     }
   }
