@@ -3,6 +3,9 @@
 一个**标准 MCP（stdio）**服务器，直连 ZBrush 内置的 JSON-RPC 桥（TCP 127.0.0.1:9876），
 不依赖 dcc-mcp 的 sidecar / registry / gateway / job 库。
 
+本项目以 MIT License 开源；内置的 ZBrush 桥副本同样来自 MIT 授权项目，
+详见 `THIRD_PARTY_NOTICES.md`。
+
     DSH (MCP client)  --stdio, one JSON-RPC per line-->  server.py
                       --TCP 127.0.0.1:9876-->  ZBrush 插件 --Python SDK-->  ZBrush
 
